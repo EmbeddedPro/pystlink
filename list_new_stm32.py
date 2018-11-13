@@ -140,3 +140,5 @@ if wrong_param_mcus:
         print("%-15s %-15s %6s %6s %6s %6s" % (
             '(pystlink)', v.get('core', ''), s['flash_size'], s['sram_size'], s.get('eeprom_size'), s['freq']
         ))
+
+print("Finished!")

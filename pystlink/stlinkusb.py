@@ -44,15 +44,12 @@ class StlinkUsbConnector():
 
     @staticmethod
     def get_all(dbg=None):
-        allDevs = []
         devices = usb.core.find(find_all=True)
 
         for dev in devices:
             for dev_type in StlinkUsbConnector.DEV_TYPES:
                 if dev.idVendor == dev_type['idVendor'] and dev.idProduct == dev_type['idProduct']:
-                    allDevs.append(StlinkUsbConnector(dbg=dbg, device=(dev, dev_type)))
-
-        return allDevs
+                    yield StlinkUsbConnector(dbg=dbg, device=(dev, dev_type))
 
     @property
     def version(self):
