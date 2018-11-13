@@ -22,19 +22,37 @@ class StlinkUsbConnector():
         }
     ]
 
-    def __init__(self, dbg=None):
+    def __init__(self, dbg=None, device=None):
         self._dbg = dbg
         self._dev_type = None
         self._xfer_counter = 0
+        if not device:
+            devices = usb.core.find(find_all=True)
+            for dev in devices:
+                for dev_type in StlinkUsbConnector.DEV_TYPES:
+                    if dev.idVendor == dev_type['idVendor'] and dev.idProduct == dev_type['idProduct']:
+                        self._dev = dev
+                        self._dev_type = dev_type
+                        self._dbg.verbose("Successfully connected to ST-Link/%s" % dev_type['version'])
+                        return
+            raise pystlink.stlinkex.StlinkException('ST-Link/V2 is not connected')
+        else:
+            self._dev = device[0]
+            self._dev_type = device[1]
+            self._dbg.verbose("Successfully connected to ST-Link/%s" % device[1]['version'])
+            return
+
+    @staticmethod
+    def get_all(dbg=None):
+        allDevs = []
         devices = usb.core.find(find_all=True)
+
         for dev in devices:
             for dev_type in StlinkUsbConnector.DEV_TYPES:
                 if dev.idVendor == dev_type['idVendor'] and dev.idProduct == dev_type['idProduct']:
-                    self._dev = dev
-                    self._dev_type = dev_type
-                    self._dbg.verbose("Successfully connected to ST-Link/%s" % dev_type['version'])
-                    return
-        raise pystlink.stlinkex.StlinkException('ST-Link/V2 is not connected')
+                    allDevs.append(StlinkUsbConnector(dbg=dbg, device=(dev, dev_type)))
+
+        return allDevs
 
     @property
     def version(self):
